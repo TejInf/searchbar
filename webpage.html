@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+
+      #search-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      #city-id,
+      #locality-id {
+        width: 100px;
+      }
+
+      #search-button {
+        cursor: pointer;
+        padding: 8px;
+      }
+
+      #result-table {
+        margin-top: 20px;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      #result-table th,
+      #result-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+    </style>
+    <title>Search Bar</title>
+  </head>
+
+  <body>
+    <script>
+      // Function to load external JSON file
+      async function loadJSON() {
+        try {
+          const response = await fetch("output.json");
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error("Error loading JSON:", error);
+          return {};
+        }
+      }
+
+      async function searchGoogle() {
+        var localityId = document.getElementById("locality-id").value;
+        // Load JSON data from the external file
+        const locationData = await loadJSON();
+
+        var cityId = locationData[localityId]["City ID"];
+        var city = locationData[localityId]["City Name"];
+        var loc = locationData[localityId]["label"];
+        var lat = locationData[localityId]["longlat_y"];
+        var lon = locationData[localityId]["longlat_x"];
+        console.log(lat);
+
+        // Remove "_LOCALITY" suffix from Locality ID
+        localityId = localityId.replace("_LOCALITY", "");
+
+        // You can construct a Google search URL with the cityId and localityId
+        var searchUrl = `https://propadmin.99acres.com/propadmin/grouplocalitiesv2.php?show_flag=1&city=${cityId}&locality=${localityId}`;
+
+        // For demonstration purposes, open the search results in a new tab
+        window.open(searchUrl, "_blank");
+
+        // Display information in the result div
+        document.getElementById(
+          "search-results"
+        ).innerHTML = `Searching 99acres for City ID: ${cityId} and Locality ID: ${localityId}`;
+
+        // Display the information in a table format
+        displayResultsTable(cityId, localityId, city, loc, lat, lon);
+      }
+
+      function displayResultsTable(cityId, localityId, city, loc, lat, lon) {
+        var table = document.getElementById("result-table");
+
+        // Clear existing rows
+        table.innerHTML = "";
+
+        // Create header row
+        var headerRow = table.insertRow(0);
+        var headerCell1 = headerRow.insertCell(0);
+        var headerCell2 = headerRow.insertCell(1);
+        var headerCell3 = headerRow.insertCell(2);
+        var headerCell4 = headerRow.insertCell(3);
+        var headerCell5 = headerRow.insertCell(4);
+        headerCell1.innerHTML = "<b>City ID</b>";
+        headerCell2.innerHTML = "<b>City Name</b>";
+        headerCell3.innerHTML = "<b>Locality Name </b>";
+        headerCell4.innerHTML = "<b> Lat </b>";
+        headerCell5.innerHTML = "<b> Long </b>";
+
+        // Create data row
+        var dataRow = table.insertRow(1);
+        var dataCell1 = dataRow.insertCell(0);
+        var dataCell2 = dataRow.insertCell(1);
+        var dataCell3 = dataRow.insertCell(2);
+        var dataCell4 = dataRow.insertCell(3);
+        var dataCell5 = dataRow.insertCell(4);
+        dataCell1.innerHTML = cityId;
+        dataCell2.innerHTML = city;
+        dataCell3.innerHTML = loc;
+        dataCell4.innerHTML = lat;
+        dataCell5.innerHTML = lon;
+      }
+    </script>
+
+    <div>
+      <div id="search-container">
+        <input type="text" id="locality-id" placeholder="Locality ID" />
+        <button id="search-button" onclick="searchGoogle()">Search</button>
+      </div>
+      <div id="search-results"></div>
+      <table id="result-table"></table>
+    </div>
+  </body>
+</html>
